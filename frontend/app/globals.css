@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@custom-variant gelap (&:where(.gelap, .gelap *));
+
+:root {
+  --latar: #f0fdfa;
+  --teks: #0f172a;
+  --kaca-isi: 255 255 255;
+  --kaca-alpha: 0.6;
+  --kaca-garis: 0.7;
+  --kaca-bayang: rgba(13, 148, 136, 0.12);
+}
+
+.gelap {
+  --latar: #041b1d;
+  --teks: #e2e8f0;
+  --kaca-isi: 15 42 46;
+  --kaca-alpha: 0.55;
+  --kaca-garis: 0.14;
+  --kaca-bayang: rgba(0, 0, 0, 0.4);
+}
+
+@theme inline {
+  --color-latar: var(--latar);
+  --color-teks: var(--teks);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-merek: var(--font-merek);
+}
+
+body {
+  background: var(--latar);
+  color: var(--teks);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+@utility kaca {
+  background-color: rgb(var(--kaca-isi) / var(--kaca-alpha));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / var(--kaca-garis));
+  box-shadow: 0 8px 32px var(--kaca-bayang);
+}
+
+@utility kaca-gelap {
+  background-color: rgb(255 255 255 / 0.18);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgb(255 255 255 / 0.3);
+}
+
+@utility geser-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.geser-x::-webkit-scrollbar {
+  display: none;
+}
+
+@utility corak {
+  background-color: var(--latar);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2772%27%20height%3D%2772%27%20viewBox%3D%270%200%2072%2072%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%230f766e%27%20stroke-width%3D%271.1%27%20opacity%3D%270.13%27%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2715%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2757%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2715%27%20cy%3D%2736%27%20rx%3D%2720%27%20ry%3D%2713%27%2F%3E%3Cellipse%20cx%3D%2757%27%20cy%3D%2736%27%20rx%3D%2720%27%20ry%3D%2713%27%2F%3E%3Cellipse%20cx%3D%270%27%20cy%3D%270%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2772%27%20cy%3D%270%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%270%27%20cy%3D%2772%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2772%27%20cy%3D%2772%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%230f766e%27%20opacity%3D%270.16%27%3E%3Ccircle%20cx%3D%2736%27%20cy%3D%2736%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%2772%27%20cy%3D%270%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2772%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%2772%27%20cy%3D%2772%27%20r%3D%272.1%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: 72px 72px;
+  background-attachment: fixed;
+}
+
+.gelap .corak {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2772%27%20height%3D%2772%27%20viewBox%3D%270%200%2072%2072%27%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%235eead4%27%20stroke-width%3D%271.1%27%20opacity%3D%270.09%27%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2715%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2736%27%20cy%3D%2757%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2715%27%20cy%3D%2736%27%20rx%3D%2720%27%20ry%3D%2713%27%2F%3E%3Cellipse%20cx%3D%2757%27%20cy%3D%2736%27%20rx%3D%2720%27%20ry%3D%2713%27%2F%3E%3Cellipse%20cx%3D%270%27%20cy%3D%270%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2772%27%20cy%3D%270%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%270%27%20cy%3D%2772%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3Cellipse%20cx%3D%2772%27%20cy%3D%2772%27%20rx%3D%2713%27%20ry%3D%2720%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%235eead4%27%20opacity%3D%270.11%27%3E%3Ccircle%20cx%3D%2736%27%20cy%3D%2736%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%2772%27%20cy%3D%270%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%2772%27%20r%3D%272.1%27%2F%3E%3Ccircle%20cx%3D%2772%27%20cy%3D%2772%27%20r%3D%272.1%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+}
