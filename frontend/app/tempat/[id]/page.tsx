@@ -10,11 +10,17 @@ import {
   ambilMenuTambahan,
   ambilTempatTambahan,
   gabungMenu,
-  tambahMenu,
   type Menu,
   type Review,
   type Tempat,
 } from "@/lib/data";
+import {
+  ambilTempat,
+  ambilMenu,
+  ambilReview,
+  tambahReview,
+  tambahMenu,
+} from "@/lib/api";
 import { kompresGambar } from "@/lib/gambar";
 import TombolTema from "@/app/TombolTema";
 import TombolBahasa from "@/app/TombolBahasa";
@@ -33,13 +39,9 @@ export default function DetailTempat() {
   const params = useParams();
   const id = Number(params.id);
 
-  const [tempat, setTempat] = useState<Tempat | undefined>(() =>
-    DATA_TEMPAT.find((t) => t.id === id)
-  );
+  const [tempat, setTempat] = useState<Tempat | undefined>(undefined);
   const [siap, setSiap] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>(() =>
-    DATA_REVIEW.filter((r) => r.tempat_id === id)
-  );
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [favoritIds, setFavoritIds] = useState<number[]>([]);
   const [nama, setNama] = useState("");
   const [rating, setRating] = useState(5);
@@ -54,10 +56,23 @@ export default function DetailTempat() {
   const [bukaMenu, setBukaMenu] = useState(false);
 
   useEffect(() => {
-    const semua = [...DATA_TEMPAT, ...ambilTempatTambahan()];
-    setTempat(semua.find((t) => t.id === id));
-    setMenuTambahan(ambilMenuTambahan());
-    setSiap(true);
+    async function ambilData() {
+      try {
+        const dataTempat = await ambilTempat(id);
+        const dataMenu = await ambilMenu(id);
+        const dataReview = await ambilReview(id);
+        setTempat({
+          ...dataTempat,
+          menu: dataMenu,
+        });
+        setReviews(Array.isArray(dataReview) ? dataReview : []);
+        setSiap(true);
+      } catch (error) {
+        console.error(error);
+        setSiap(true);
+      }
+    }
+    ambilData();
   }, [id]);
 
   useEffect(() => {
@@ -92,7 +107,7 @@ export default function DetailTempat() {
       ? 0
       : reviews.reduce((a, r) => a + r.rating, 0) / reviews.length;
 
-  const menu = gabungMenu(tempat, menuTambahan);
+  const menu = tempat.menu;
   const peta =
     "https://maps.google.com/maps?q=" + tempat.lat + "," + tempat.lng + "&z=17&output=embed";
 
@@ -125,86 +140,113 @@ export default function DetailTempat() {
     }
   }
 
-  function kirimMenu(e: React.FormEvent) {
-    e.preventDefault();
-    setErrorMenu("");
+    async function kirimMenu(e: React.FormEvent) {
+      e.preventDefault();
+      setErrorMenu("");
 
-    if (!menuNama.trim()) {
-      setErrorMenu(kata.menu_err_nama);
-      return;
-    }
-    const harga = Number(menuHarga);
-    if (!menuHarga.trim() || Number.isNaN(harga)) {
-      setErrorMenu(kata.menu_err_harga);
-      return;
-    }
-    if (harga < 0) {
-      setErrorMenu(kata.menu_err_negatif);
-      return;
-    }
-    const kembar = menu.some(
-      (m) => m.nama.trim().toLowerCase() === menuNama.trim().toLowerCase()
-    );
-    if (kembar) {
-      setErrorMenu(kata.menu_err_kembar);
-      return;
-    }
+      if (!menuNama.trim()) {
+        setErrorMenu(kata.menu_err_nama);
+        return;
+      }
 
-    const baru: Menu = {
-      nama: menuNama.trim(),
-      harga: harga,
-      badge: menuBadge || undefined,
-    };
+      const harga = Number(menuHarga);
 
-    try {
-      tambahMenu(id, baru);
-    } catch {
-      setErrorMenu(kata.menu_err_penuh);
-      return;
+      if (!menuHarga.trim() || Number.isNaN(harga)) {
+        setErrorMenu(kata.menu_err_harga);
+        return;
+      }
+
+      if (harga < 0) {
+        setErrorMenu(kata.menu_err_negatif);
+        return;
+      }
+
+      const kembar = menu.some(
+        (m) => m.nama.trim().toLowerCase() === menuNama.trim().toLowerCase()
+      );
+
+      if (kembar) {
+        setErrorMenu(kata.menu_err_kembar);
+        return;
+      }
+
+      try {
+        await tambahMenu(id, {
+          nama: menuNama.trim(),
+          harga: harga,
+          badge: menuBadge || undefined,
+        });
+
+        const dataMenu = await ambilMenu(id);
+
+        setTempat((sekarang) =>
+          sekarang
+            ? {
+                ...sekarang,
+                menu: Array.isArray(dataMenu) ? dataMenu : [],
+              }
+            : sekarang
+        );
+
+        setMenuNama("");
+        setMenuHarga("");
+        setMenuBadge("");
+        setBukaMenu(false);
+      } catch (error) {
+        console.error(error);
+        setErrorMenu("Gagal menambahkan menu");
+      }
     }
-    setMenuTambahan(ambilMenuTambahan());
-    setMenuNama("");
-    setMenuHarga("");
-    setMenuBadge("");
-    setBukaMenu(false);
-  }
+  
+    async function kirimReview(e: React.FormEvent) {
+      e.preventDefault();
+      setError("");
 
-  function kirimReview(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
+      if (!nama.trim() || !komentar.trim()) {
+        setError(kata.review_err_kosong);
+        return;
+      }
 
-    if (!nama.trim() || !komentar.trim()) {
-      setError(kata.review_err_kosong);
-      return;
+      if (rating < 1 || rating > 5) {
+        setError(kata.review_err_rating);
+        return;
+      }
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setError("Silakan login terlebih dahulu");
+        return;
+      }
+
+      try {
+        await tambahReview(
+          id,
+          {
+            rating: rating,
+            komentar: komentar.trim(),
+            foto_url: fotoReview || undefined,
+          },
+          token
+        );
+
+        const dataReview = await ambilReview(id);
+        setReviews(Array.isArray(dataReview) ? dataReview : []);
+
+        setNama("");
+        setKomentar("");
+        setRating(5);
+        setFotoReview("");
+      } catch (error) {
+        console.error(error);
+
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Gagal menambahkan review");
+        }
+      }
     }
-    if (rating < 1 || rating > 5) {
-      setError(kata.review_err_rating);
-      return;
-    }
-    const sudah = reviews.some(
-      (r) => r.nama_pengulas.toLowerCase() === nama.trim().toLowerCase()
-    );
-    if (sudah) {
-      setError(kata.review_err_kembar);
-      return;
-    }
-
-    const baru: Review = {
-      id: Date.now(),
-      tempat_id: id,
-      nama_pengulas: nama.trim(),
-      rating: rating,
-      komentar: komentar.trim(),
-      created_at: new Date().toISOString().slice(0, 10),
-      foto_url: fotoReview || undefined,
-    };
-
-    setReviews([baru, ...reviews]);
-    setNama("");
-    setKomentar("");
-    setRating(5);
-    setFotoReview("");
-  }
 
   const gayaInput =
     "w-full rounded-2xl border border-white/60 bg-white/80 px-4 py-3 text-sm outline-none focus:border-teal-500 gelap:bg-white/10 gelap:border-white/15";

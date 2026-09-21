@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  DATA_TEMPAT,
   ambilTempatTambahan,
   ambilMenuTambahan,
   gabungMenu,
   type Menu,
   type Tempat,
 } from "@/lib/data";
+import { ambilSemuaTempat } from "@/lib/api";
 import Header from "./Header";
 import Banner from "./Banner";
 import { usePesan } from "./Bahasa";
@@ -31,13 +31,24 @@ export default function Home() {
   const [hanyaMurah, setHanyaMurah] = useState(false);
   const [tambahan, setTambahan] = useState<Tempat[]>([]);
   const [menuTambahan, setMenuTambahan] = useState<Record<number, Menu[]>>({});
+  const [tempatBackend, setTempatBackend] = useState<Tempat[]>([]);
 
   useEffect(() => {
     setTambahan(ambilTempatTambahan());
     setMenuTambahan(ambilMenuTambahan());
+    ambilSemuaTempat()
+      .then((data) => {
+        setTempatBackend(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }, []);
 
-  const semua = useMemo(() => [...DATA_TEMPAT, ...tambahan], [tambahan]);
+  const semua = useMemo(
+    () => [...tempatBackend, ...tambahan],
+    [tempatBackend, tambahan]
+  );
 
   const hasil = useMemo(() => {
     const kata = cari.trim().toLowerCase();

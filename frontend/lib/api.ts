@@ -1,0 +1,103 @@
+import type { Tempat, Review, Menu } from "./data";
+
+const API_URL = "http://localhost:8080";
+
+export async function ambilSemuaTempat(): Promise<Tempat[]> {
+  const response = await fetch(`${API_URL}/restaurants`);
+
+  if (!response.ok) {
+    throw new Error("Gagal mengambil data tempat");
+  }
+  const data = await response.json();
+  return data.map((tempat: Omit<Tempat, "menu">) => ({
+    ...tempat,
+    menu: [],
+  }));
+}
+
+export async function ambilTempat(id: number): Promise<Tempat> {
+  const response = await fetch(`${API_URL}/restaurants/${id}`);
+  if (!response.ok) {
+    throw new Error("Tempat tidak ditemukan");
+  }
+  const tempat = await response.json();
+  return {
+    ...tempat,
+    menu: [],
+  };
+}
+
+export async function ambilMenu(tempatId: number): Promise<Menu[]> {
+  const response = await fetch(
+    `${API_URL}/api/tempat/${tempatId}/menu`
+  );
+  if (!response.ok) {
+    throw new Error("Gagal mengambil menu");
+  }
+  return response.json();
+}
+
+export async function ambilReview(tempatId: number): Promise<Review[]> {
+  const response = await fetch(
+    `${API_URL}/restaurants/${tempatId}/reviews`
+  );
+  if (!response.ok) {
+    throw new Error("Gagal mengambil review");
+  }
+  return response.json();
+}
+
+export async function tambahMenu(
+  tempatId: number,
+  menu: {
+    nama: string;
+    harga: number;
+    badge?: string;
+  }
+): Promise<Menu> {
+  const response = await fetch(
+    `${API_URL}/api/tempat/${tempatId}/menu`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(menu),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Gagal menambahkan menu");
+  }
+
+  return response.json();
+}
+
+export async function tambahReview(
+  tempatId: number,
+  review: {
+    rating: number;
+    komentar: string;
+    foto_url?: string;
+  },
+  token: string
+): Promise<Review> {
+  const response = await fetch(`${API_URL}/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      tempat_id: tempatId,
+      rating: review.rating,
+      komentar: review.komentar,
+      foto_url: review.foto_url || "",
+    }),
+  });
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new Error(data?.message || "Gagal menambahkan review");
+  }
+  return response.json();
+}
