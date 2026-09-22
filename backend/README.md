@@ -2,7 +2,7 @@
 Backend API untuk aplikasi review tempat makan. Aplikasi ini memungkinkan pengguna untuk mencari tempat makan, melihat informasi restoran, memberikan review, memberikan rating, dan menyimpan restoran ke daftar favorit.
 
 ## Fitur
-* Register dan login pengguna
+* Login pengguna
 * Authentication menggunakan JWT
 * Melihat profil pengguna
 * Menampilkan daftar restoran
