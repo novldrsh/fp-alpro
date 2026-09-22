@@ -5,64 +5,40 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"gorm.io/gorm"
 )
 
-func GetRestaurants(db *sql.DB) gin.HandlerFunc {
+func GetRestaurants(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		rows, err := db.Query(`
-			SELECT
+		restaurants := make([]models.Restaurant, 0)
+
+		err := db.
+			Table("restaurants AS r").
+			Select(`
 				r.id,
 				r.name,
-				COALESCE(r.description, ''),
+				COALESCE(r.description, '') AS description,
 				r.location,
-				COALESCE(r.category, ''),
-				COALESCE(r.latitude, 0),
-				COALESCE(r.longitude, 0),
-				COALESCE(r.jam_buka, ''),
-				COALESCE(r.harga_min, 0),
-				COALESCE(r.harga_max, 0),
-				COALESCE(r.image, ''),
-				COALESCE(AVG(rv.rating), 0),
-				COUNT(rv.id)
-			FROM restaurants r
-			LEFT JOIN reviews rv ON r.id = rv.restaurant_id
-			GROUP BY r.id
-			ORDER BY r.id
-		`)
+				COALESCE(r.category, '') AS category,
+				COALESCE(r.latitude, 0) AS latitude,
+				COALESCE(r.longitude, 0) AS longitude,
+				COALESCE(r.jam_buka, '') AS jam_buka,
+				COALESCE(r.harga_min, 0) AS harga_min,
+				COALESCE(r.harga_max, 0) AS harga_max,
+				COALESCE(r.image, '') AS image,
+				COALESCE(AVG(rv.rating), 0) AS rating_rata2,
+				COUNT(rv.id) AS jumlah_review
+			`).
+			Joins("LEFT JOIN reviews AS rv ON rv.restaurant_id = r.id").
+			Group("r.id").
+			Order("r.id").
+			Scan(&restaurants).Error
+
 		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to get restaurants",
-			})
+			c.JSON(500, gin.H{"message": "Failed to get restaurants"})
 			return
 		}
-		defer rows.Close()
-		var restaurants []models.Restaurant
-		for rows.Next() {
-			var restaurant models.Restaurant
-			err := rows.Scan(
-				&restaurant.ID,
-				&restaurant.Name,
-				&restaurant.Description,
-				&restaurant.Location,
-				&restaurant.Category,
-				&restaurant.Latitude,
-				&restaurant.Longitude,
-				&restaurant.JamBuka,
-				&restaurant.HargaMin,
-				&restaurant.HargaMax,
-				&restaurant.Image,
-				&restaurant.RatingRata2,
-				&restaurant.JumlahReview,
-			)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Failed to read restaurant data",
-				})
-				return
-			}
 
-			restaurants = append(restaurants, restaurant)
-		}
 		c.JSON(200, restaurants)
 	}
 }

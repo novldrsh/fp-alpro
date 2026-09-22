@@ -20,7 +20,14 @@ func main() {
 	defer db.Close()
 	fmt.Println("Database connected!")
 
-	router.GET("/api/tempat", handlers.GetRestaurants(db))
+	gormDB := connectGORM()
+	var jumlahRestoran int64
+	if err := gormDB.Table("restaurants").Count(&jumlahRestoran).Error; err != nil {
+		panic(err)
+	}
+	fmt.Printf("GORM connected! Jumlah restoran: %d\n", jumlahRestoran)
+
+	router.GET("/api/tempat", handlers.GetRestaurants(gormDB))
 	router.GET("/api/tempat/search", handlers.SearchRestaurants(db))
 	router.GET("/api/tempat/:id", handlers.GetRestaurantByID(db))
 	router.POST("/api/tempat", handlers.CreateRestaurant(db))
