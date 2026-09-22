@@ -212,23 +212,13 @@ export default function DetailTempat() {
         return;
       }
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("Silakan login terlebih dahulu");
-        return;
-      }
-
       try {
-        await tambahReview(
-          id,
-          {
-            rating: rating,
-            komentar: komentar.trim(),
-            foto_url: fotoReview || undefined,
-          },
-          token
-        );
+        await tambahReview(id, {
+          nama_pengulas: nama.trim(),
+          rating: rating,
+          komentar: komentar.trim(),
+          foto_url: fotoReview || undefined,
+        });
 
         const dataReview = await ambilReview(id);
         setReviews(Array.isArray(dataReview) ? dataReview : []);

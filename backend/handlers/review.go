@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"strings"
 )
 
 func GetReviews(db *sql.DB) gin.HandlerFunc {
@@ -48,77 +49,66 @@ func GetReviews(db *sql.DB) gin.HandlerFunc {
 
 func CreateReview(db *sql.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		restaurantID, err := strconv.Atoi(c.Param("id"))
+		if err != nil || restaurantID <= 0 {
+			c.JSON(400, gin.H{
+				"message": "Invalid restaurant ID",
+			})
+			return
+		}
+
 		var review models.Review
-		err := c.ShouldBindJSON(&review)
-		if err != nil {
+		if err := c.ShouldBindJSON(&review); err != nil {
 			c.JSON(400, gin.H{
 				"message": "Invalid JSON",
 			})
 			return
 		}
-		userID, exists := c.Get("user_id")
-		if !exists {
-			c.JSON(401, gin.H{
-				"message": "User not found",
+
+		review.Reviewer = strings.TrimSpace(review.Reviewer)
+		review.Comment = strings.TrimSpace(review.Comment)
+		review.RestaurantID = restaurantID
+
+		if review.Reviewer == "" {
+			c.JSON(400, gin.H{
+				"message": "Reviewer name cannot be empty",
 			})
 			return
 		}
-		userIDInt := userID.(int)
-		var reviewer string
-		err = db.QueryRow(
-			"SELECT name FROM users WHERE id = $1",
-			userIDInt,
-		).Scan(&reviewer)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to get user",
-			})
-			return
-		}
-		var restaurantID int
-		err = db.QueryRow(
-			"SELECT id FROM restaurants WHERE id = $1",
-			review.RestaurantID,
-		).Scan(&restaurantID)
-		if err != nil {
-			c.JSON(404, gin.H{
-				"message": "Restaurant not found",
-			})
-			return
-		}
+
 		if review.Rating < 1 || review.Rating > 5 {
 			c.JSON(400, gin.H{
 				"message": "Rating must be between 1 and 5",
 			})
 			return
 		}
+
 		if review.Comment == "" {
 			c.JSON(400, gin.H{
 				"message": "Comment cannot be empty",
 			})
 			return
 		}
-		var existingReview int
+
+		var existingRestaurantID int
 		err = db.QueryRow(
-			`SELECT id
-			 FROM reviews
-			 WHERE user_id = $1
-			 AND restaurant_id = $2`,
-			userIDInt,
-			review.RestaurantID,
-		).Scan(&existingReview)
-		if err == nil {
-			c.JSON(409, gin.H{
-				"message": "You have already reviewed this restaurant",
+			"SELECT id FROM restaurants WHERE id = $1",
+			restaurantID,
+		).Scan(&existingRestaurantID)
+
+		if err == sql.ErrNoRows {
+			c.JSON(404, gin.H{
+				"message": "Restaurant not found",
 			})
 			return
 		}
-		if err != sql.ErrNoRows {
+		if err != nil {
 			c.JSON(500, gin.H{
-				"message": "Failed to check existing review",
+				"message": "Failed to check restaurant",
 			})
 			return
 		}
+
 		err = db.QueryRow(
 			`INSERT INTO reviews (
 				restaurant_id,
@@ -128,25 +118,22 @@ func CreateReview(db *sql.DB) gin.HandlerFunc {
 				comment,
 				foto_url
 			)
-			VALUES ($1, $2, $3, $4, $5, $6)
+			VALUES ($1, NULL, $2, $3, $4, $5)
 			RETURNING id, created_at`,
 			review.RestaurantID,
-			userIDInt,
-			reviewer,
+			review.Reviewer,
 			review.Rating,
 			review.Comment,
 			review.Image,
-		).Scan(
-			&review.ID,
-			&review.CreatedAt,
-		)
+		).Scan(&review.ID, &review.CreatedAt)
+
 		if err != nil {
 			c.JSON(500, gin.H{
 				"message": "Failed to add review",
 			})
 			return
 		}
-		review.Reviewer = reviewer
+
 		c.JSON(201, review)
 	}
 }

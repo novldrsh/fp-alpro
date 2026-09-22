@@ -20,24 +20,22 @@ func main() {
 	defer db.Close()
 	fmt.Println("Database connected!")
 
-	router.GET("/restaurants", handlers.GetRestaurants(db))
-	router.GET("/restaurants/search", handlers.SearchRestaurants(db))
-	router.GET("/restaurants/:id", handlers.GetRestaurantByID(db))
-	router.POST("/restaurants", handlers.CreateRestaurant(db))
-	router.PUT("/restaurants/:id", handlers.UpdateRestaurant(db))
-	router.DELETE("/restaurants/:id", handlers.DeleteRestaurant(db))
+	router.GET("/api/tempat", handlers.GetRestaurants(db))
+	router.GET("/api/tempat/search", handlers.SearchRestaurants(db))
+	router.GET("/api/tempat/:id", handlers.GetRestaurantByID(db))
+	router.POST("/api/tempat", handlers.CreateRestaurant(db))
+	router.PUT("/api/tempat/:id", handlers.UpdateRestaurant(db))
+	router.DELETE("/api/tempat/:id", handlers.DeleteRestaurant(db))
 
 	router.GET("/api/tempat/:id/menu", handlers.GetMenus(db)) 
 	router.POST("/api/tempat/:id/menu", handlers.CreateMenu(db))
 
 	router.GET("/reviews", handlers.GetReviews(db))
-	router.POST("/reviews", handlers.AuthMiddleware(), handlers.CreateReview(db))
-	router.GET("/reviews/:id", handlers.GetReviewByID(db))
+	router.POST("/api/tempat/:id/review", handlers.CreateReview(db))
+	router.GET("/api/tempat/:id/review", handlers.GetReviewsByRestaurant(db))
 	router.PUT("/reviews/:id", handlers.AuthMiddleware(), handlers.UpdateReview(db))
 	router.DELETE("/reviews/:id", handlers.AuthMiddleware(), handlers.DeleteReview(db))
-
-	router.GET("/restaurants/:id/reviews", handlers.GetReviewsByRestaurant(db))
-	router.GET("/restaurants/:id/rating", handlers.GetRestaurantRating(db))
+	router.GET("/api/tempat/:id/rating", handlers.GetRestaurantRating(db))
 
 	router.POST("/register", handlers.RegisterUser(db))
 	router.POST("/login", handlers.LoginUser(db))

@@ -3,7 +3,7 @@ import type { Tempat, Review, Menu } from "./data";
 const API_URL = "http://localhost:8080";
 
 export async function ambilSemuaTempat(): Promise<Tempat[]> {
-  const response = await fetch(`${API_URL}/restaurants`);
+  const response = await fetch(`${API_URL}/api/tempat`);
 
   if (!response.ok) {
     throw new Error("Gagal mengambil data tempat");
@@ -16,7 +16,7 @@ export async function ambilSemuaTempat(): Promise<Tempat[]> {
 }
 
 export async function ambilTempat(id: number): Promise<Tempat> {
-  const response = await fetch(`${API_URL}/restaurants/${id}`);
+  const response = await fetch(`${API_URL}/api/tempat/${id}`);
   if (!response.ok) {
     throw new Error("Tempat tidak ditemukan");
   }
@@ -39,7 +39,7 @@ export async function ambilMenu(tempatId: number): Promise<Menu[]> {
 
 export async function ambilReview(tempatId: number): Promise<Review[]> {
   const response = await fetch(
-    `${API_URL}/restaurants/${tempatId}/reviews`
+    `${API_URL}/api/tempat/${tempatId}/review`
   );
   if (!response.ok) {
     throw new Error("Gagal mengambil review");
@@ -76,29 +76,33 @@ export async function tambahMenu(
 export async function tambahReview(
   tempatId: number,
   review: {
+    nama_pengulas: string;
     rating: number;
     komentar: string;
     foto_url?: string;
-  },
-  token: string
+  }
 ): Promise<Review> {
-  const response = await fetch(`${API_URL}/reviews`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      tempat_id: tempatId,
-      rating: review.rating,
-      komentar: review.komentar,
-      foto_url: review.foto_url || "",
-    }),
-  });
+  const response = await fetch(
+    `${API_URL}/api/tempat/${tempatId}/review`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nama_pengulas: review.nama_pengulas,
+        rating: review.rating,
+        komentar: review.komentar,
+        foto_url: review.foto_url || "",
+      }),
+    }
+  );
+
   if (!response.ok) {
     const data = await response.json().catch(() => null);
     throw new Error(data?.message || "Gagal menambahkan review");
   }
+
   return response.json();
 }
 
@@ -113,7 +117,7 @@ export async function tambahRestoran(data: {
   harga_max: number;
   foto_url: string;
 }): Promise<Tempat> {
-  const response = await fetch(`${API_URL}/restaurants`, {
+  const response = await fetch(`${API_URL}/api/tempat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
