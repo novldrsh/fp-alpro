@@ -165,7 +165,3 @@ Review 2 = 4
 Review 3 = 5
 Average Rating = 4.67
 ```
-
-## Status Project
-Backend API telah selesai dibuat dan endpoint utama telah diuji.
-Tahap selanjutnya adalah integrasi dengan frontend dan pengujian aplikasi secara keseluruhan.
