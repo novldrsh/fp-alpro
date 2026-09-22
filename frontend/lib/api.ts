@@ -101,3 +101,31 @@ export async function tambahReview(
   }
   return response.json();
 }
+
+export async function tambahRestoran(data: {
+  nama: string;
+  kategori: string;
+  alamat: string;
+  lat: number;
+  lng: number;
+  jam_buka: string;
+  harga_min: number;
+  harga_max: number;
+  foto_url: string;
+}): Promise<Tempat> {
+  const response = await fetch(`${API_URL}/restaurants`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const hasil = await response.json();
+
+  if (!response.ok) {
+    throw new Error(hasil.message || "Gagal menambahkan restoran");
+  }
+
+  return hasil;
+}

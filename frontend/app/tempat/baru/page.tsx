@@ -1,5 +1,6 @@
 "use client";
 
+import { tambahRestoran, tambahMenu } from "@/lib/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -90,7 +91,7 @@ export default function TambahTempat() {
     setMenu(menu.filter((m) => m.nama !== nama));
   }
 
-  function simpan(e: React.FormEvent) {
+  async function simpan(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
@@ -115,44 +116,30 @@ export default function TambahTempat() {
       return;
     }
 
-    const tambahan = ambilTempatTambahan();
-    const semua = [...DATA_TEMPAT, ...tambahan];
+        try {
+      const baru = await tambahRestoran({
+        nama: nama.trim(),
+        kategori,
+        alamat: alamat.trim(),
+        lat: -7.2819,
+        lng: 112.7947,
+        jam_buka: jamBuka.trim(),
+        harga_min: min,
+        harga_max: max,
+        foto_url: foto || FOTO_BAWAAN,
+      });
 
-    const kembar = semua.some(
-      (t) => t.nama.trim().toLowerCase() === nama.trim().toLowerCase()
-    );
-    if (kembar) {
-      setError(kata.baru_err_kembar);
-      return;
+      for (const item of menu) {
+        await tambahMenu(baru.id, item);
+      }
+
+      router.push("/tempat/" + baru.id);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Gagal menyimpan restoran"
+      );
     }
-
-    const idBaru = Math.max(0, ...semua.map((t) => t.id)) + 1;
-
-    const baru: Tempat = {
-      id: idBaru,
-      nama: nama.trim(),
-      kategori: kategori,
-      alamat: alamat.trim(),
-      lat: -7.2819,
-      lng: 112.7947,
-      jam_buka: jamBuka.trim(),
-      harga_min: min,
-      harga_max: max,
-      foto_url: foto || FOTO_BAWAAN,
-      rating_rata2: 0,
-      jumlah_review: 0,
-      menu: menu,
-    };
-
-    try {
-      simpanTempatTambahan([...tambahan, baru]);
-    } catch {
-      setError(kata.baru_err_penuh);
-      return;
-    }
-    router.push("/tempat/" + idBaru);
   }
-
   const gayaInput =
     "w-full rounded-2xl border border-white/60 bg-white/80 px-4 py-3 text-sm outline-none focus:border-teal-500 gelap:bg-white/10 gelap:border-white/15";
 
