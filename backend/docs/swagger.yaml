@@ -1,0 +1,391 @@
+definitions:
+  models.Menu:
+    properties:
+      badge:
+        type: string
+      harga:
+        type: integer
+      id:
+        type: integer
+      nama:
+        type: string
+      tempat_id:
+        type: integer
+    type: object
+  models.Restaurant:
+    properties:
+      alamat:
+        type: string
+      deskripsi:
+        type: string
+      foto_url:
+        type: string
+      harga_max:
+        type: integer
+      harga_min:
+        type: integer
+      id:
+        type: integer
+      jam_buka:
+        type: string
+      jumlah_review:
+        type: integer
+      kategori:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      nama:
+        type: string
+      rating_rata2:
+        type: number
+    type: object
+  models.Review:
+    properties:
+      created_at:
+        type: string
+      foto_url:
+        type: string
+      id:
+        type: integer
+      komentar:
+        type: string
+      nama_pengulas:
+        type: string
+      rating:
+        type: number
+      tempat_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /api/tempat:
+    get:
+      description: Mengambil daftar seluruh tempat makan
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Restaurant'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Ambil seluruh tempat makan
+      tags:
+      - tempat
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan tempat makan baru
+      parameters:
+      - description: Data tempat makan
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Restaurant'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Restaurant'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Tambah tempat makan
+      tags:
+      - tempat
+  /api/tempat/{id}:
+    delete:
+      description: Menghapus tempat makan berdasarkan ID
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Hapus tempat makan
+      tags:
+      - tempat
+    get:
+      description: Mengambil detail satu tempat makan berdasarkan ID
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Restaurant'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Ambil tempat makan berdasarkan ID
+      tags:
+      - tempat
+    put:
+      consumes:
+      - application/json
+      description: Memperbarui data tempat makan berdasarkan ID
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Data tempat makan
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Restaurant'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Restaurant'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update tempat makan
+      tags:
+      - tempat
+  /api/tempat/{id}/menu:
+    get:
+      description: Mengambil daftar menu berdasarkan ID tempat makan
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Menu'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Ambil menu tempat makan
+      tags:
+      - menu
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan menu ke tempat makan
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Data menu
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Menu'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Menu'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Tambah menu
+      tags:
+      - menu
+  /api/tempat/{id}/review:
+    get:
+      description: Mengambil semua review berdasarkan ID tempat makan
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Review'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Ambil review tempat makan
+      tags:
+      - review
+    post:
+      consumes:
+      - application/json
+      description: Menambahkan review ke tempat makan
+      parameters:
+      - description: ID tempat makan
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Data review
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.Review'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Review'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Tambah review
+      tags:
+      - review
+  /api/tempat/search:
+    get:
+      description: Mencari tempat makan berdasarkan nama
+      parameters:
+      - description: Nama tempat makan
+        in: query
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Restaurant'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Cari tempat makan
+      tags:
+      - tempat
+swagger: "2.0"

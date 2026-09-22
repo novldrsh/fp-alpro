@@ -6,6 +6,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetRestaurants godoc
+// @Summary Ambil seluruh tempat makan
+// @Description Mengambil daftar seluruh tempat makan
+// @Tags tempat
+// @Produce json
+// @Success 200 {array} models.Restaurant
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat [get]
 func GetRestaurants(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurants := make([]models.Restaurant, 0)
@@ -41,6 +49,18 @@ func GetRestaurants(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// CreateRestaurant godoc
+// @Summary Tambah tempat makan
+// @Description Menambahkan tempat makan baru
+// @Tags tempat
+// @Accept json
+// @Produce json
+// @Param body body models.Restaurant true "Data tempat makan"
+// @Success 201 {object} models.Restaurant
+// @Failure 400 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat [post]
 func CreateRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var restaurant models.Restaurant
@@ -82,6 +102,16 @@ func CreateRestaurant(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// GetRestaurantByID godoc
+// @Summary Ambil tempat makan berdasarkan ID
+// @Description Mengambil detail satu tempat makan berdasarkan ID
+// @Tags tempat
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Success 200 {object} models.Restaurant
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id} [get]
 func GetRestaurantByID(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -123,6 +153,20 @@ func GetRestaurantByID(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// UpdateRestaurant godoc
+// @Summary Update tempat makan
+// @Description Memperbarui data tempat makan berdasarkan ID
+// @Tags tempat
+// @Accept json
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Param body body models.Restaurant true "Data tempat makan"
+// @Success 200 {object} models.Restaurant
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 409 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id} [put]
 func UpdateRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -190,6 +234,16 @@ func UpdateRestaurant(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// DeleteRestaurant godoc
+// @Summary Hapus tempat makan
+// @Description Menghapus tempat makan berdasarkan ID
+// @Tags tempat
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id} [delete]
 func DeleteRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("id")
@@ -212,6 +266,16 @@ func DeleteRestaurant(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// SearchRestaurants godoc
+// @Summary Cari tempat makan
+// @Description Mencari tempat makan berdasarkan nama
+// @Tags tempat
+// @Produce json
+// @Param name query string true "Nama tempat makan"
+// @Success 200 {array} models.Restaurant
+// @Failure 400 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/search [get]
 func SearchRestaurants(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		name := c.Query("name")
