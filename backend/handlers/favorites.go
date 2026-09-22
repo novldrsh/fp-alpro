@@ -1,160 +1,134 @@
 package handlers
 
 import (
-	"database/sql"
 	"backend-fp-alpro/models"
+
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func AddFavorite(db *sql.DB) gin.HandlerFunc {
+func AddFavorite(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID := c.Param("restaurant_id")
+
 		userID, exists := c.Get("user_id")
 		if !exists {
-			c.JSON(401, gin.H{
-				"message": "User not found",
-			})
+			c.JSON(401, gin.H{"message": "User not found"})
 			return
 		}
+
 		userIDInt := userID.(int)
-		var restaurantExists int
-		err := db.QueryRow(
-			"SELECT id FROM restaurants WHERE id = $1",
-			restaurantID,
-		).Scan(&restaurantExists)
-		if err != nil {
-			c.JSON(404, gin.H{
-				"message": "Restaurant not found",
-			})
+
+		var restaurant models.Restaurant
+		if err := db.First(&restaurant, restaurantID).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				c.JSON(404, gin.H{"message": "Restaurant not found"})
+				return
+			}
+
+			c.JSON(500, gin.H{"message": "Failed to check restaurant"})
 			return
 		}
-		var favoriteExists int
-		err = db.QueryRow(
-			`SELECT id FROM favorites
-			 WHERE user_id = $1 AND restaurant_id = $2`,
-			userIDInt,
-			restaurantID,
-		).Scan(&favoriteExists)
-		if err == nil {
+
+		var count int64
+		if err := db.Model(&models.Favorite{}).
+			Where("user_id = ? AND restaurant_id = ?", userIDInt, restaurantID).
+			Count(&count).Error; err != nil {
+			c.JSON(500, gin.H{"message": "Failed to check favorite"})
+			return
+		}
+
+		if count > 0 {
 			c.JSON(400, gin.H{
 				"message": "Restaurant already in favorites",
 			})
 			return
 		}
-		_, err = db.Exec(
-			`INSERT INTO favorites (user_id, restaurant_id)
-			 VALUES ($1, $2)`,
-			userIDInt,
-			restaurantID,
-		)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to add favorite",
-			})
+
+		favorite := models.Favorite{
+			UserID:       userIDInt,
+			RestaurantID: restaurant.ID,
+		}
+
+		if err := db.Create(&favorite).Error; err != nil {
+			c.JSON(500, gin.H{"message": "Failed to add favorite"})
 			return
 		}
+
 		c.JSON(201, gin.H{
 			"message": "Restaurant added to favorites",
 		})
 	}
 }
 
-func GetFavorites(db *sql.DB) gin.HandlerFunc {
+func GetFavorites(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID, exists := c.Get("user_id")
 		if !exists {
-			c.JSON(401, gin.H{
-				"message": "User not found",
-			})
+			c.JSON(401, gin.H{"message": "User not found"})
 			return
 		}
+
 		userIDInt := userID.(int)
-		rows, err := db.Query(
-			`SELECT r.id, r.name,
-					COALESCE(r.description, ''),
-					r.location,
-					COALESCE(r.category, ''),
-					COALESCE(r.latitude, 0),
-					COALESCE(r.longitude, 0),
-					COALESCE(r.image, ''),
-					COALESCE(AVG(rv.rating), 0)
-			FROM favorites f
-			JOIN restaurants r ON f.restaurant_id = r.id
-			LEFT JOIN reviews rv ON r.id = rv.restaurant_id
-			WHERE f.user_id = $1
-			GROUP BY r.id
-			ORDER BY r.id`,
-			userIDInt,
-		)
+
+		restaurants := make([]models.Restaurant, 0)
+
+		err := db.Table("favorites AS f").
+			Select(`
+				r.id,
+				r.name,
+				COALESCE(r.description, '') AS description,
+				r.location,
+				COALESCE(r.category, '') AS category,
+				COALESCE(r.latitude, 0) AS latitude,
+				COALESCE(r.longitude, 0) AS longitude,
+				COALESCE(r.image, '') AS image,
+				COALESCE(AVG(rv.rating), 0) AS rating_rata2
+			`).
+			Joins("JOIN restaurants r ON f.restaurant_id = r.id").
+			Joins("LEFT JOIN reviews rv ON r.id = rv.restaurant_id").
+			Where("f.user_id = ?", userIDInt).
+			Group("r.id").
+			Order("r.id").
+			Scan(&restaurants).Error
+
 		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to get favorites",
-			})
+			c.JSON(500, gin.H{"message": "Failed to get favorites"})
 			return
 		}
-		defer rows.Close()
-		restaurants := []models.Restaurant{}
-		for rows.Next() {
-			var restaurant models.Restaurant
-			err := rows.Scan(
-				&restaurant.ID,
-				&restaurant.Name,
-				&restaurant.Description,
-				&restaurant.Location,
-				&restaurant.Category,
-				&restaurant.Latitude,
-				&restaurant.Longitude,
-				&restaurant.Image,
-				&restaurant.RatingRata2,
-			)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"message": "Failed to read favorite data",
-				})
-				return
-			}
-			restaurants = append(restaurants, restaurant)
-		}
+
 		c.JSON(200, restaurants)
 	}
 }
 
-func DeleteFavorite(db *sql.DB) gin.HandlerFunc {
+func DeleteFavorite(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID := c.Param("restaurant_id")
+
 		userID, exists := c.Get("user_id")
 		if !exists {
-			c.JSON(401, gin.H{
-				"message": "User not found",
-			})
+			c.JSON(401, gin.H{"message": "User not found"})
 			return
 		}
+
 		userIDInt := userID.(int)
-		result, err := db.Exec(
-			`DELETE FROM favorites
-			 WHERE user_id = $1 AND restaurant_id = $2`,
+
+		result := db.Where(
+			"user_id = ? AND restaurant_id = ?",
 			userIDInt,
 			restaurantID,
-		)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to delete favorite",
-			})
+		).Delete(&models.Favorite{})
+
+		if result.Error != nil {
+			c.JSON(500, gin.H{"message": "Failed to delete favorite"})
 			return
 		}
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			c.JSON(500, gin.H{
-				"message": "Failed to check delete",
-			})
+
+		if result.RowsAffected == 0 {
+			c.JSON(404, gin.H{"message": "Favorite not found"})
 			return
 		}
-		if rowsAffected == 0 {
-			c.JSON(404, gin.H{
-				"message": "Favorite not found",
-			})
-			return
-		}
+
 		c.JSON(200, gin.H{
 			"message": "Restaurant removed from favorites",
 		})

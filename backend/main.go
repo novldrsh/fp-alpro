@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"backend-fp-alpro/handlers"
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -16,11 +16,10 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
-	db := connectDatabase()
-	defer db.Close()
-	fmt.Println("Database connected!")
 
 	gormDB := connectGORM()
+	autoMigrate(gormDB)
+	seedRestaurants(gormDB)
 	var jumlahRestoran int64
 	if err := gormDB.Table("restaurants").Count(&jumlahRestoran).Error; err != nil {
 		panic(err)
@@ -28,29 +27,29 @@ func main() {
 	fmt.Printf("GORM connected! Jumlah restoran: %d\n", jumlahRestoran)
 
 	router.GET("/api/tempat", handlers.GetRestaurants(gormDB))
-	router.GET("/api/tempat/search", handlers.SearchRestaurants(db))
-	router.GET("/api/tempat/:id", handlers.GetRestaurantByID(db))
-	router.POST("/api/tempat", handlers.CreateRestaurant(db))
-	router.PUT("/api/tempat/:id", handlers.UpdateRestaurant(db))
-	router.DELETE("/api/tempat/:id", handlers.DeleteRestaurant(db))
+	router.GET("/api/tempat/search", handlers.SearchRestaurants(gormDB))
+	router.GET("/api/tempat/:id", handlers.GetRestaurantByID(gormDB))
+	router.POST("/api/tempat", handlers.CreateRestaurant(gormDB))
+	router.PUT("/api/tempat/:id", handlers.UpdateRestaurant(gormDB))
+	router.DELETE("/api/tempat/:id", handlers.DeleteRestaurant(gormDB))
 
-	router.GET("/api/tempat/:id/menu", handlers.GetMenus(db)) 
-	router.POST("/api/tempat/:id/menu", handlers.CreateMenu(db))
+	router.GET("/api/tempat/:id/menu", handlers.GetMenus(gormDB))
+	router.POST("/api/tempat/:id/menu", handlers.CreateMenu(gormDB))
 
-	router.GET("/reviews", handlers.GetReviews(db))
-	router.POST("/api/tempat/:id/review", handlers.CreateReview(db))
-	router.GET("/api/tempat/:id/review", handlers.GetReviewsByRestaurant(db))
-	router.PUT("/reviews/:id", handlers.AuthMiddleware(), handlers.UpdateReview(db))
-	router.DELETE("/reviews/:id", handlers.AuthMiddleware(), handlers.DeleteReview(db))
-	router.GET("/api/tempat/:id/rating", handlers.GetRestaurantRating(db))
+	router.GET("/reviews", handlers.GetReviews(gormDB))
+	router.POST("/api/tempat/:id/review", handlers.CreateReview(gormDB))
+	router.GET("/api/tempat/:id/review", handlers.GetReviewsByRestaurant(gormDB))
+	router.PUT("/reviews/:id", handlers.AuthMiddleware(), handlers.UpdateReview(gormDB))
+	router.DELETE("/reviews/:id", handlers.AuthMiddleware(), handlers.DeleteReview(gormDB))
+	router.GET("/api/tempat/:id/rating", handlers.GetRestaurantRating(gormDB))
 
-	router.POST("/register", handlers.RegisterUser(db))
-	router.POST("/login", handlers.LoginUser(db))
-	router.GET("/profile", handlers.AuthMiddleware(), handlers.GetProfile(db))
+	router.POST("/register", handlers.RegisterUser(gormDB))
+	router.POST("/login", handlers.LoginUser(gormDB))
+	router.GET("/profile", handlers.AuthMiddleware(), handlers.GetProfile(gormDB))
 
-	router.POST("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.AddFavorite(db))
-	router.GET("/favorites", handlers.AuthMiddleware(), handlers.GetFavorites(db))
-	router.DELETE("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.DeleteFavorite(db))
-	
+	router.POST("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.AddFavorite(gormDB))
+	router.GET("/favorites", handlers.AuthMiddleware(), handlers.GetFavorites(gormDB))
+	router.DELETE("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.DeleteFavorite(gormDB))
+
 	router.Run(":8080")
 }
