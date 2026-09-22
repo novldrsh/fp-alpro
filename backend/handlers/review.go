@@ -38,6 +38,19 @@ func GetReviews(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// CreateReview godoc
+// @Summary Tambah review
+// @Description Menambahkan review ke tempat makan
+// @Tags review
+// @Accept json
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Param body body models.Review true "Data review"
+// @Success 201 {object} models.Review
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id}/review [post]
 func CreateReview(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID, err := strconv.Atoi(c.Param("id"))
@@ -295,6 +308,15 @@ func DeleteReview(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// GetReviewsByRestaurant godoc
+// @Summary Ambil review tempat makan
+// @Description Mengambil semua review berdasarkan ID tempat makan
+// @Tags review
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Success 200 {array} models.Review
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id}/review [get]
 func GetReviewsByRestaurant(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID := c.Param("id")

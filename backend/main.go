@@ -1,10 +1,13 @@
 package main
 
 import (
+	_ "backend-fp-alpro/docs"
 	"backend-fp-alpro/handlers"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -50,6 +53,8 @@ func main() {
 	router.POST("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.AddFavorite(gormDB))
 	router.GET("/favorites", handlers.AuthMiddleware(), handlers.GetFavorites(gormDB))
 	router.DELETE("/favorites/:restaurant_id", handlers.AuthMiddleware(), handlers.DeleteFavorite(gormDB))
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.Run(":8080")
 }

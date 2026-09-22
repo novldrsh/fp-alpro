@@ -7,6 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
+// GetMenus godoc
+// @Summary Ambil menu tempat makan
+// @Description Mengambil daftar menu berdasarkan ID tempat makan
+// @Tags menu
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Success 200 {array} models.Menu
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id}/menu [get]
 func GetMenus(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID := c.Param("id")
@@ -27,6 +36,19 @@ func GetMenus(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
+// CreateMenu godoc
+// @Summary Tambah menu
+// @Description Menambahkan menu ke tempat makan
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Param id path int true "ID tempat makan"
+// @Param body body models.Menu true "Data menu"
+// @Success 201 {object} models.Menu
+// @Failure 400 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /api/tempat/{id}/menu [post]
 func CreateMenu(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		restaurantID := c.Param("id")
