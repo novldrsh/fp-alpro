@@ -1,14 +1,14 @@
-# Review Makan Sekitar ITS
+# Review Makan Sekitar ITS (MakanITS)
 
 ## Deskripsi Project
 
-Aplikasi web untuk mencari dan menilai tempat makan di sekitar kampus ITS
-Surabaya. Pengguna bisa mencari tempat makan, melihat detail dan menunya,
-membaca review mahasiswa lain, menulis review sendiri, menyimpan tempat
-favorit, serta menambahkan tempat yang belum terdaftar.
+Aplikasi web full-stack untuk mencari dan menilai tempat makan di sekitar
+kampus ITS Surabaya. Pengguna bisa mencari tempat makan, melihat detail dan
+menunya, membaca review mahasiswa lain, menulis review sendiri, menyimpan
+tempat favorit, serta menambahkan tempat yang belum terdaftar.
 
-Project ini dibuat sebagai Final Project Lab Based Education (LBE) Algoritma dan
-Pemrograman 2026, Departemen Teknik Informatika ITS.
+Project ini dibuat sebagai Final Project Lab Based Education (LBE) Algoritma
+dan Pemrograman 2026, Departemen Teknik Informatika ITS.
 
 | Anggota | NRP | Bagian |
 |---|---|---|
@@ -19,25 +19,27 @@ Pemrograman 2026, Departemen Teknik Informatika ITS.
 
 | Bagian | Status |
 |---|---|
-| Frontend (Next.js) | Selesai dan bisa dijalankan |
-| Backend (Golang) | Sedang dikerjakan |
-| Database (PostgreSQL) | Menunggu backend |
-| Dokumentasi Swagger | Menunggu backend |
-| Pengujian Postman | Menunggu backend |
+| Frontend (Next.js) | Selesai |
+| Backend (Golang + Gin) | Selesai |
+| Database (PostgreSQL) | Selesai |
+| Frontend tersambung ke backend | Selesai |
+| GORM | Baru sebagian, sebagian handler masih memakai SQL langsung |
+| Dokumentasi Swagger | Belum dikerjakan |
+| Pengujian Postman | Belum dikerjakan |
 
-Karena backend belum tersedia, frontend untuk sementara memakai **data contoh**
-yang ditulis langsung di berkas `frontend/lib/data.ts`, berisi 9 tempat makan.
+Catatan jujur mengenai tiga baris terakhir:
 
-Data yang dibuat pengguna disimpan di **localStorage**, yaitu penyimpanan kecil
-milik browser di komputer masing-masing. Akibatnya:
+- **GORM** sudah terpasang dan dipakai pada pengambilan daftar tempat, tetapi
+  sebagian handler lain masih memakai `database/sql` dengan query SQL langsung.
+- **Swagger** belum dipasang. Untuk sementara dokumentasi endpoint ditulis
+  manual pada `backend/API_DOCUMENTATION.md` dan pada README ini.
+- **Postman** belum disusun menjadi koleksi yang bisa diekspor.
 
-- Tempat baru, menu tambahan, dan daftar favorit hanya muncul di browser yang
-  membuatnya, tidak terlihat oleh pengguna lain.
-- Review yang baru ditulis hilang ketika halaman dimuat ulang, karena review
-  belum ikut disimpan.
-
-Penyimpanan sementara ini akan diganti dengan pemanggilan REST API ke backend
-begitu backend siap. Bagian antarmuka tidak perlu diubah, hanya sumber datanya.
+Selain itu, **daftar favorit** disimpan di `localStorage`, yaitu penyimpanan
+kecil milik browser, bukan di database. Akibatnya favorit hanya muncul di
+browser yang menyimpannya. Pilihan tema terang/gelap dan pilihan bahasa juga
+disimpan di sana. Data lain (tempat, menu, review) seluruhnya diambil dari
+backend.
 
 ## Problem
 
@@ -49,8 +51,8 @@ hanya beredar dari mulut ke mulut atau di grup chat angkatan. Masalahnya:
 2. Rekomendasi bersifat personal sehingga sulit dibandingkan.
 3. Tempat makan baru sulit diketahui karena tidak ada daftar bersama.
 
-Aplikasi ini mengumpulkan informasi tersebut dalam satu daftar yang bisa dicari
-dan diisi oleh mahasiswa sendiri.
+Aplikasi ini mengumpulkan informasi tersebut dalam satu daftar yang bisa
+dicari dan diisi oleh mahasiswa sendiri.
 
 ## Features
 
@@ -58,7 +60,7 @@ dan diisi oleh mahasiswa sendiri.
 
 | Fitur | Keterangan |
 |---|---|
-| Daftar tempat makan | Menampilkan seluruh tempat dalam bentuk kartu |
+| Daftar tempat makan | Menampilkan seluruh tempat dari database dalam bentuk kartu |
 | Detail tempat | Menampilkan alamat, kategori, jam buka, kisaran harga, dan rating rata-rata |
 | Daftar menu | Menampilkan menu tiap tempat beserta harga dan badge Best Seller atau Rekomendasi |
 | Menu kolaboratif | Menu bisa ditambahkan saat membuat tempat, maupun oleh pengguna lain di halaman detail |
@@ -90,20 +92,20 @@ dan diisi oleh mahasiswa sendiri.
 
 ### Validasi input
 
-Setiap form menolak input yang tidak sah. Aturannya dibuat sama dengan aturan
-yang nanti dipakai backend, agar pesan yang muncul konsisten:
+Setiap form menolak input yang tidak sah:
 
-| Kondisi | Pesan |
-|---|---|
-| Kolom wajib dikosongkan | Nama, alamat, dan jam buka wajib diisi |
-| Harga bukan angka atau negatif | Harga harus berupa angka dan tidak boleh negatif |
-| Harga minimum lebih besar dari maksimum | Harga minimum tidak boleh lebih besar dari harga maksimum |
-| Rating di luar 1 sampai 5 | Rating harus antara 1 sampai 5 |
-| Nama tempat sudah terdaftar | Tempat dengan nama itu sudah terdaftar |
-| Satu orang menulis review dua kali | Kamu sudah pernah menulis review untuk tempat ini |
+| Kondisi | Pesan | Diperiksa di |
+|---|---|---|
+| Kolom wajib dikosongkan | Nama, alamat, dan jam buka wajib diisi | Frontend dan backend |
+| Harga bukan angka atau negatif | Harga harus berupa angka dan tidak boleh negatif | Frontend dan backend |
+| Harga minimum lebih besar dari maksimum | Harga minimum tidak boleh lebih besar dari harga maksimum | Frontend |
+| Rating di luar 1 sampai 5 | Rating harus antara 1 sampai 5 | Frontend dan backend |
+| Nama tempat sudah terdaftar | Tempat dengan nama itu sudah terdaftar | Frontend dan backend (409) |
+| Satu orang menulis review dua kali | Kamu sudah pernah menulis review untuk tempat ini | Frontend saja |
 
 Dua kondisi terakhir adalah kasus **409 Conflict**: datanya sah, tetapi ditolak
-karena bentrok dengan data yang sudah ada.
+karena bentrok dengan data yang sudah ada. Pemeriksaan review ganda saat ini
+baru ada di frontend, belum di backend.
 
 ## Tech Stack
 
@@ -111,28 +113,68 @@ karena bentrok dengan data yang sudah ada.
 |---|---|---|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 | Dipakai |
 | Package Manager | pnpm 11 | Dipakai |
+| Backend | Golang, Gin | Dipakai |
+| Database | PostgreSQL | Dipakai |
+| ORM | GORM | Dipakai sebagian |
+| Autentikasi | JWT | Dipakai pada endpoint profil dan favorit |
 | Version Control | Git, GitHub | Dipakai |
-| Backend | Golang, Gin | Direncanakan |
-| ORM | GORM | Direncanakan |
-| Database | PostgreSQL | Direncanakan |
-| Dokumentasi API | Swagger | Direncanakan |
-| Pengujian API | Postman | Direncanakan |
+| Dokumentasi API | Swagger | Belum |
+| Pengujian API | Postman | Belum |
 
 ## Cara Menjalankan Project
 
 ### Kebutuhan
 
-- Node.js dan pnpm (untuk frontend)
-- Go dan PostgreSQL (untuk backend, setelah backend tersedia)
+- Node.js dan pnpm
+- Go
+- PostgreSQL
 
 ### 1. Clone repository
 
 ```bash
-git clone <url-repository>
-cd <nama-folder>
+git clone https://github.com/novldrsh/fp-alpro.git
+cd fp-alpro
 ```
 
-### 2. Menjalankan frontend
+### 2. Menyiapkan database
+
+```bash
+createdb fp_alpro
+psql fp_alpro < backend/database.sql
+psql fp_alpro < backend/seed_makanits.sql
+```
+
+`database.sql` membuat seluruh tabel. `seed_makanits.sql` mengisi 9 tempat
+makan beserta menu dan review-nya.
+
+### 3. Menyiapkan environment variable backend
+
+Buat berkas `backend/.env`:
+
+```
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=fp_alpro
+JWT_SECRET=rahasia-fp-alpro
+```
+
+Sesuaikan `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` dengan PostgreSQL di
+komputer masing-masing.
+
+### 4. Menjalankan backend
+
+```bash
+cd backend
+go mod tidy
+go run .
+```
+
+Backend berjalan pada `http://localhost:8080`.
+Uji dengan membuka `http://localhost:8080/api/tempat`.
+
+### 5. Menjalankan frontend
 
 ```bash
 cd frontend
@@ -140,30 +182,15 @@ pnpm install
 pnpm dev
 ```
 
-Frontend berjalan pada `http://localhost:3000` dan sudah bisa dipakai tanpa
-backend, memakai data contoh.
+Frontend berjalan pada `http://localhost:3000`.
 
-### 3. Menjalankan backend (setelah backend tersedia)
-
-```bash
-cp .env.example .env
-```
-
-Sesuaikan isi `.env` dengan konfigurasi PostgreSQL di komputer masing-masing,
-lalu:
-
-```bash
-cd backend
-go mod tidy
-go run ./cmd
-```
-
-Backend akan berjalan pada `http://localhost:8080`.
+**Backend harus dijalankan lebih dulu.** Frontend mengambil seluruh datanya
+dari API, sehingga halaman akan kosong bila backend belum hidup.
 
 ## Struktur Project
 
 ```text
-project/
+fp-alpro/
 ├── frontend/
 │   ├── app/
 │   │   ├── layout.tsx
@@ -174,6 +201,8 @@ project/
 │   │   ├── Bahasa.tsx            pengaturan bahasa
 │   │   ├── TombolBahasa.tsx
 │   │   ├── TombolTema.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx          halaman login
 │   │   ├── favorit/
 │   │   │   └── page.tsx          halaman favorit
 │   │   └── tempat/
@@ -182,24 +211,40 @@ project/
 │   │       └── [id]/
 │   │           └── page.tsx      halaman detail tempat
 │   ├── lib/
-│   │   ├── data.ts               data contoh dan penyimpanan browser
+│   │   ├── api.ts                pemanggilan REST API ke backend
+│   │   ├── data.ts               tipe data dan penyimpanan browser
 │   │   ├── bahasa.ts             teks antarmuka dua bahasa
 │   │   └── gambar.ts             pengecilan ukuran foto unggahan
 │   ├── public/
 │   ├── package.json
 │   └── tsconfig.json
-├── backend/                      belum dibuat, rencana struktur di bawah
-│   ├── cmd/
-│   ├── config/
-│   ├── internal/
-│   │   ├── handler/
-│   │   ├── service/
-│   │   ├── repo/
-│   │   └── model/
-│   ├── api-docs/
-│   └── go.mod
+├── backend/
+│   ├── main.go                   pendaftaran route Gin
+│   ├── database.go               koneksi PostgreSQL
+│   ├── migration.go              pembuatan tabel
+│   ├── seed.go                   pengisian data awal
+│   ├── handlers/
+│   │   ├── restaurant.go
+│   │   ├── review.go
+│   │   ├── menu.go
+│   │   ├── favorites.go
+│   │   ├── auth.go
+│   │   └── user.go
+│   ├── models/
+│   │   ├── restaurant.go
+│   │   ├── review.go
+│   │   ├── menu.go
+│   │   ├── user.go
+│   │   └── favorite.go
+│   ├── database.sql              skema tabel
+│   ├── seed.sql                  data awal versi pertama
+│   ├── seed_makanits.sql         data yang dipakai saat ini
+│   ├── API_DOCUMENTATION.md      dokumentasi endpoint sementara
+│   ├── go.mod
+│   └── go.sum
 ├── .gitignore
 ├── .env.example
+├── PANDUAN_RIZKY.md
 └── README.md
 ```
 
@@ -217,28 +262,44 @@ Beranda (/)
   +-- Tambah Tempat (/tempat/baru)
   |
   +-- Favorit (/favorit)
+  |
+  +-- Login (/login)
 ```
 
 ## Dokumentasi API
 
-Bagian ini adalah **rancangan API** yang sudah disepakati antara frontend dan
-backend. Nama kolomnya sama persis dengan yang dipakai frontend sekarang, agar
-saat backend siap, frontend cukup mengganti sumber datanya.
+Seluruh endpoint di bawah ini sudah berjalan dan dipakai oleh frontend.
 
-Setelah backend berjalan, dokumentasi Swagger akan tersedia di
-`http://localhost:8080/swagger/index.html`.
+Swagger belum dipasang. Dokumentasi sementara ada pada berkas
+`backend/API_DOCUMENTATION.md` dan pada bagian ini.
 
-### Endpoint
+### Endpoint utama
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
 | GET | `/api/tempat` | Mengambil seluruh tempat makan |
 | GET | `/api/tempat/:id` | Mengambil detail satu tempat makan |
+| GET | `/api/tempat/search?name=` | Mencari tempat berdasarkan nama |
 | POST | `/api/tempat` | Menambahkan tempat makan baru |
 | GET | `/api/tempat/:id/menu` | Mengambil menu satu tempat |
 | POST | `/api/tempat/:id/menu` | Menambahkan menu pada satu tempat |
 | GET | `/api/tempat/:id/review` | Mengambil seluruh review pada satu tempat |
 | POST | `/api/tempat/:id/review` | Menambahkan review pada satu tempat |
+| GET | `/api/tempat/:id/rating` | Mengambil rata-rata rating satu tempat |
+
+### Endpoint tambahan
+
+| Method | Endpoint | Perlu login |
+|---|---|---|
+| POST | `/register` | Tidak |
+| POST | `/login` | Tidak |
+| GET | `/profile` | Ya |
+| GET | `/favorites` | Ya |
+| POST | `/favorites/:restaurant_id` | Ya |
+| DELETE | `/favorites/:restaurant_id` | Ya |
+
+Fitur utama aplikasi tidak mewajibkan login. Endpoint di atas dibuat sebagai
+pengembangan tambahan.
 
 ### Entity
 
@@ -259,9 +320,10 @@ Tempat                 Review                  Menu
 
 Satu `Tempat` memiliki banyak `Review` dan banyak `Menu`.
 
-Kolom `rating_rata2` dan `jumlah_review` tidak disimpan di tabel `Tempat`,
-melainkan dihitung dari seluruh `Review` yang terhubung. Di frontend saat ini
-kedua angka itu masih berupa data contoh.
+Kolom `rating_rata2` dan `jumlah_review` tidak disimpan pada tabel `Tempat`,
+melainkan dihitung backend dari seluruh `Review` yang terhubung.
+
+Terdapat pula tabel `users` dan `favorites` untuk endpoint tambahan di atas.
 
 ### Status Code
 
@@ -270,16 +332,19 @@ kedua angka itu masih berupa data contoh.
 | 200 | Permintaan berhasil |
 | 201 | Data berhasil dibuat |
 | 400 | Request tidak valid, misalnya kolom kosong atau rating di luar 1-5 |
+| 401 | Belum login pada endpoint yang memerlukan login |
 | 404 | Data tidak ditemukan |
-| 409 | Request valid tetapi ditolak, misalnya nama tempat sudah terdaftar, atau satu orang menulis review dua kali pada tempat yang sama |
+| 409 | Request valid tetapi ditolak, misalnya nama tempat sudah terdaftar |
 | 500 | Kesalahan pada server |
 
-### Rencana Pengujian API
+### Pengujian API
 
-Setiap endpoint akan diuji dengan Postman, termasuk kasus gagalnya, untuk
-memastikan kode 400, 404, dan 409 muncul pada kondisi yang tepat.
+Koleksi Postman belum disusun. Rencananya setiap endpoint diuji termasuk kasus
+gagalnya, untuk memastikan kode 400, 404, dan 409 muncul pada kondisi yang
+tepat.
 
 ## Kredit Gambar
 
-Foto tempat makan pada data contoh diambil dari Google dan dipakai
-sebagai gambar sementara, sampai diganti dengan foto asli tempatnya.
+Foto tempat makan pada data contoh diambil dari Wikimedia Commons dan situs
+resmi ITS, dipakai sebagai gambar sementara sampai diganti dengan foto asli
+tempatnya.
