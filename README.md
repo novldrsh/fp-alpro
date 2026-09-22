@@ -23,17 +23,13 @@ dan Pemrograman 2026, Departemen Teknik Informatika ITS.
 | Backend (Golang + Gin) | Selesai |
 | Database (PostgreSQL) | Selesai |
 | Frontend tersambung ke backend | Selesai |
-| GORM | Baru sebagian, sebagian handler masih memakai SQL langsung |
-| Dokumentasi Swagger | Belum dikerjakan |
-| Pengujian Postman | Belum dikerjakan |
+| GORM | Selesai |
+| Dokumentasi Swagger | Selesai |
+| Pengujian Postman | Belum lengkap |
 
-Catatan jujur mengenai tiga baris terakhir:
-
-- **GORM** sudah terpasang dan dipakai pada pengambilan daftar tempat, tetapi
-  sebagian handler lain masih memakai `database/sql` dengan query SQL langsung.
-- **Swagger** belum dipasang. Untuk sementara dokumentasi endpoint ditulis
-  manual pada `backend/API_DOCUMENTATION.md` dan pada README ini.
-- **Postman** belum disusun menjadi koleksi yang bisa diekspor.
+Catatan mengenai baris terakhir: koleksi Postman pada
+`backend/postman_collection.json` baru berisi satu request dan belum lengkap.
+Pengujian seluruh endpoint beserta kasus gagalnya belum selesai disusun.
 
 Selain itu, **daftar favorit** disimpan di `localStorage`, yaitu penyimpanan
 kecil milik browser, bukan di database. Akibatnya favorit hanya muncul di
@@ -115,11 +111,11 @@ baru ada di frontend, belum di backend.
 | Package Manager | pnpm 11 | Dipakai |
 | Backend | Golang, Gin | Dipakai |
 | Database | PostgreSQL | Dipakai |
-| ORM | GORM | Dipakai sebagian |
+| ORM | GORM | Dipakai |
 | Autentikasi | JWT | Dipakai pada endpoint profil dan favorit |
 | Version Control | Git, GitHub | Dipakai |
-| Dokumentasi API | Swagger | Belum |
-| Pengujian API | Postman | Belum |
+| Dokumentasi API | Swagger | Dipakai |
+| Pengujian API | Postman | Belum lengkap |
 
 ## Cara Menjalankan Project
 
@@ -172,7 +168,9 @@ go run .
 ```
 
 Backend berjalan pada `http://localhost:8080`.
-Uji dengan membuka `http://localhost:8080/api/tempat`.
+
+- Uji data: `http://localhost:8080/api/tempat`
+- Dokumentasi Swagger: `http://localhost:8080/swagger/index.html`
 
 ### 5. Menjalankan frontend
 
@@ -270,7 +268,8 @@ Beranda (/)
 
 Seluruh endpoint di bawah ini sudah berjalan dan dipakai oleh frontend.
 
-Swagger belum dipasang. Dokumentasi sementara ada pada berkas
+Dokumentasi Swagger tersedia pada `http://localhost:8080/swagger/index.html`
+setelah backend dijalankan. Ringkasan endpoint juga ditulis pada
 `backend/API_DOCUMENTATION.md` dan pada bagian ini.
 
 ### Endpoint utama
@@ -339,7 +338,8 @@ Terdapat pula tabel `users` dan `favorites` untuk endpoint tambahan di atas.
 
 ### Pengujian API
 
-Koleksi Postman belum disusun. Rencananya setiap endpoint diuji termasuk kasus
+Koleksi Postman ada pada `backend/postman_collection.json`, namun baru berisi
+satu request dan belum lengkap. Rencananya setiap endpoint diuji termasuk kasus
 gagalnya, untuk memastikan kode 400, 404, dan 409 muncul pada kondisi yang
 tepat.
 
