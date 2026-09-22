@@ -13,7 +13,7 @@ Pemrograman 2026, Departemen Teknik Informatika ITS.
 | Anggota | NRP | Bagian |
 |---|---|---|
 | Novaldi Rayhan Asshiddiqi | 5025251188 | Frontend |
-| Luthfir Rizqy Fathullah Hanggi | (isi NRP) | Backend |
+| Luthfir Rizqy Fathullah Hanggi | 5025251081 | Backend |
 
 ## Status Pengerjaan
 
